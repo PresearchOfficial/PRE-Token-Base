@@ -1,0 +1,24 @@
+node_modules
+.env
+
+# Hardhat files
+/cache
+/artifacts
+
+# TypeChain files
+/typechain
+/typechain-types
+
+# solidity-coverage files
+/coverage
+/coverage.json
+
+# old files are not needed
+/*/*.old
+
+build/*
+build/contracts
+build/source
+
+.openzeppelin/unknown-*.json
+package-lock.json

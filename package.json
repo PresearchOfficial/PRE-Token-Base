@@ -1,0 +1,33 @@
+{
+  "name": "PRETokenBase",
+  "version": "1.0.0",
+  "description": "Presearch Token (PRE) contract implementation for Base/Optimism L2 network",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test"
+  },
+  "keywords": [],
+  "author": "Vladimir Klimo",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PresearchOfficial/PRE-Token-Base.git"
+  },
+  "devDependencies": {
+    "@eth-optimism/contracts-bedrock": "^0.17.1",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts-upgradeable": "^5.0.2",
+    "@openzeppelin/hardhat-upgrades": "^3.0.5",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.11.1",
+    "hardhat": "^2.22.2",
+    "typechain": "^8.3.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2"
+  }
+}
