@@ -21,11 +21,7 @@ import { EIP3009 } from "./EIP3009.sol";
  * TRANSFER_AUTHORIZABLE_ROLE is set during EIP9001 inicialization 
  */
 abstract contract PresearchCommonERC20 is Initializable, ERC20CappedUpgradeable, EIP3009, PausableUpgradeable {
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");        
-
-    function __PresearchCommonERC20_init() internal onlyInitializing {
-        __PresearchCommonERC20_init_unchained();
-    }
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     function __PresearchCommonERC20_init_unchained() internal onlyInitializing {
         // initial setup of contract roles
@@ -95,11 +91,13 @@ abstract contract PresearchCommonERC20 is Initializable, ERC20CappedUpgradeable,
      * - `balance` of the calling account must be >= the sum of values in `amounts` going to other accounts
      */
     function transferBatch(address[] calldata recipients, uint256[] calldata amounts) external virtual whenNotPaused returns (bool) {
-        require(recipients.length == amounts.length);
+        uint amtLenght = amounts.length; // optimization for gas
+        // safety check
+        require(recipients.length == amtLenght);
 
         address sender = _msgSender();
-
-        for (uint i = 0; i < amounts.length; i++) {
+        // uint i = 0 by default (zero-state), no need for assignment of default value
+        for (uint i; i < amtLenght; i++) {
             uint amount = amounts[i];
             address recipient = recipients[i];
 

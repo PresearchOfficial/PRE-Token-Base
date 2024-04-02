@@ -218,7 +218,7 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
     ) external virtual onlyRole(TRANSFER_AUTHORIZER_ROLE) {
         EIP3009Storage storage $ = _getEIP3009Storage();
         require(
-            $._authorizationStates[authorizer][nonce],
+            !$._authorizationStates[authorizer][nonce],
             _AUTHORIZATION_USED_ERROR
         );
 
