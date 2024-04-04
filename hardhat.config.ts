@@ -16,7 +16,7 @@ const config: HardhatUserConfig = {
   },
   networks: {
     // for mainnet
-    'base-mainnet': {
+    'base': {
       url: 'https://mainnet.base.org',
       accounts: [process.env.WALLET_KEY as string],
       gasPrice: 1000000000,
