@@ -30,11 +30,39 @@ const config: HardhatUserConfig = {
     // for local dev environment
     'base-local': {
       url: 'http://127.0.0.1:8545',
-      accounts: [process.env.TEST_WALLET_KEY as string, process.env.WL2 as string, process.env.WL3 as string],
+      accounts: [process.env.TEST_WALLET_KEYS as string, process.env.WL2 as string, process.env.WL3 as string],
       gasPrice: 1000000000,
     },
   },
   defaultNetwork: 'hardhat',
+  etherscan: {
+    apiKey: {
+      "optimism-sepolia": process.env.OPTIMISM_API_KEY as string,
+      "base-sepolia": process.env.BASE_API_KEY as string,
+      "base": process.env.BASE_API_KEY as string,
+    },
+    customChains: [
+      {
+        network: "optimism-sepolia",
+        chainId: 11155420,
+        urls: {
+          apiURL: "https://api-sepolia-optimistic.etherscan.io/api",
+          browserURL: "https://sepolia-optimism.etherscan.io/"
+        }
+      },
+      {
+        network: "base-sepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org/"
+        }
+      }
+    ]
+  },
+  sourcify: {
+    enabled: true
+  },
 };
 
 export default config;
