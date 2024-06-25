@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * Ported to 0.8.24 solidity by Vladimir Klimo, bitCore,s.r.o.
  * 20.03.2024 - https://www.bitcore.sk
  */
@@ -42,7 +42,7 @@ import { AccessControlEnumerableUpgradeable } from "@openzeppelin/contracts-upgr
  * @title Presearch Commom ERC20
  * @author Vladimir Klimo
  * @notice Direct port of PRE Token V3 contract from solidity 0.6.2 to 0.8.24 with customizations for EIP3009 (previously PRETransferAuthorizableERC20.sol)
- * 
+ *
  * @dev Implementation of EIP3009
  * Modification for DOMAIN_SEPARATOR library was handled by using internal generator for domain separator of EIP712Upgradeable
  * main EIP3009 contract is extended with AccessControl and allow only TRANSFER_AUTHORIZABLE_ROLE members (preferably contracts)
@@ -63,7 +63,7 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
 
     function __EIP3009_init_unchained() internal onlyInitializing {
         _grantRole(TRANSFER_AUTHORIZER_ROLE, _msgSender());
-    }        
+    }
 
     // keccak256("TransferWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)")
     bytes32 public constant TRANSFER_WITH_AUTHORIZATION_TYPEHASH = 0x7c7c6cdb67a18743f49ec6fa9b35f50d52ed05cbed4cc592e13b44501c1a2267;

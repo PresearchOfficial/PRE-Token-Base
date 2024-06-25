@@ -1,11 +1,9 @@
-import { time, loadFixture, } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { PRETokenBase } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
-describe("Presearch Token", function() {  
+describe("Presearch Token", function() {
   let tokenAddress: string;
   let con: PRETokenBase;
   let owner: SignerWithAddress;
@@ -16,7 +14,7 @@ describe("Presearch Token", function() {
     const pre = await ethers.getContractFactory("PRETokenBase");
     //console.log("Deploying PRETokenBase...");
     const contract = await upgrades.deployProxy(pre, [
-        "Presearch Token", 
+        "Presearch Token",
         "PRE",
         '0x4200000000000000000000000000000000000010', // Standard Bridge address on L2 minting source
         '0xEC213F83defB583af3A000B1c0ada660b1902A0F' // presearch token address on L1
@@ -47,37 +45,37 @@ describe("Presearch Token", function() {
 
   it('Check total MAX supply', async () => {
     const value =  await con.cap() / BigInt(BigInt(10)**await con.decimals());
-    expect(value.toString()).to.equal('1000000000');    
+    expect(value.toString()).to.equal('1000000000');
   });
 
   it('Check bridge function', async () => {
     const value =  await con.bridge();
-    expect(value.toString()).to.equal('0x4200000000000000000000000000000000000010');    
+    expect(value.toString()).to.equal('0x4200000000000000000000000000000000000010');
   });
 
   it('Check l2Bridge function', async () => {
     const value =  await con.l2Bridge();
-    expect(value.toString()).to.equal('0x4200000000000000000000000000000000000010');    
+    expect(value.toString()).to.equal('0x4200000000000000000000000000000000000010');
   });
 
   it('Check l1Token function', async () => {
     const value =  await con.l1Token();
-    expect(value.toString()).to.equal('0xEC213F83defB583af3A000B1c0ada660b1902A0F');    
+    expect(value.toString()).to.equal('0xEC213F83defB583af3A000B1c0ada660b1902A0F');
   });
 
   it('Check remoteToken function', async () => {
     const value =  await con.remoteToken();
-    expect(value.toString()).to.equal('0xEC213F83defB583af3A000B1c0ada660b1902A0F');    
+    expect(value.toString()).to.equal('0xEC213F83defB583af3A000B1c0ada660b1902A0F');
   });
 
   it('Check transfer', async () => {
     const v1 = await con.balanceOf(w1.address);
     await con.connect(owner).transfer(w1.address, 100);
     const v2 = await con.balanceOf(w1.address);
-    expect(v2-v1).to.equal(100);      
+    expect(v2-v1).to.equal(100);
   });
-  
-  it('Check transferBatch', async () => {  
+
+  it('Check transferBatch', async () => {
     const v1 = await con.balanceOf(w1.address);
     const v2 = await con.balanceOf(w2.address);
     await con.connect(owner).transferBatch([w1.address,w2.address], [100,100]);
@@ -178,6 +176,74 @@ describe("Presearch Token", function() {
         await con.getRoleAdmin(role)
     ).be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
   });
-  
 
+  it('Grant TRANSFER_AUTHORIZER_ROLE to w1', async () => {
+    await con.grantRole(await con.TRANSFER_AUTHORIZER_ROLE(), w1.address);
+    await expect(
+        await con.getRoleMember
+        (await con.TRANSFER_AUTHORIZER_ROLE(), 1)
+    ).be.equal(w1.address);
+  });
+
+  it('Preforms transferWithAuthorization function', async () => {
+
+    const network = await ethers.provider.getNetwork();
+    const contractAddress = await con.getAddress();
+    const beforeBalance = await con.balanceOf(w1.address);
+
+    const domain = {
+      name: "",
+      version: "",
+      chainId: network.chainId,
+      verifyingContract: contractAddress,
+    };
+
+    const types = {
+      TransferWithAuthorization: [
+        { name: "from", type: "address" },
+        { name: "to", type: "address" },
+        { name: "value", type: "uint256" },
+        { name: "validAfter", type: "uint256" },
+        { name: "validBefore", type: "uint256" },
+        { name: "nonce", type: "bytes32" },
+      ],
+    };
+
+    const value = 100;
+    const validAfter = 0;
+    const validBefore = Math.floor(Date.now() / 1000) + 3600; // valid for one hour
+    const nonce = ethers.hexlify(ethers.randomBytes(32));
+
+    const message = {
+      from: owner.address,
+      to: w1.address,
+      value,
+      validAfter,
+      validBefore,
+      nonce,
+    };
+
+    const signature = await owner.signTypedData(domain, types, message);
+
+    const v = parseInt(signature?.slice(130, 132),16);
+    const r = signature?.slice(0, 66);
+    const s = "0x" + signature?.slice(66, 130);
+
+    // Perform the transfer with authorization
+    await con.connect(w1).transferWithAuthorization(
+      owner.address,
+      w1.address,
+      value,
+      validAfter,
+      validBefore,
+      nonce,
+      v,
+      r,
+      s
+    );
+
+    const balance = await con.balanceOf(w1.address);
+    expect(balance).to.equal(beforeBalance + BigInt(value));
+
+  });
 });

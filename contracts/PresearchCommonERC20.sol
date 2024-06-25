@@ -18,7 +18,7 @@ import { EIP3009 } from "./EIP3009.sol";
  * @dev PresearchCommonERC20 is ported version of PRETokenV3 contract
  * MINTER_ROLE is not necessary as Base/Optimism L2 would utilize the native bridge to mint/burn token on L2
  * PAUSER_ROLE is implemented for security reason to stop/pause any transaction (red button case)
- * TRANSFER_AUTHORIZABLE_ROLE is set during EIP9001 inicialization 
+ * TRANSFER_AUTHORIZABLE_ROLE is set during EIP9001 initialization 
  */
 abstract contract PresearchCommonERC20 is Initializable, ERC20CappedUpgradeable, EIP3009, PausableUpgradeable {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");

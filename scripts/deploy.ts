@@ -14,11 +14,11 @@ async function main() {
     case 'optimism-mainnet': { L1TokenAddress = '0xEC213F83defB583af3A000B1c0ada660b1902A0F'; break; }
     default: { throw new TypeError('Unknown network for deployment'); break; }
   }
-  
+
   const pre = await ethers.getContractFactory("PRETokenBase");
   console.log("Deploying PRETokenBase...");
   const proxy = await upgrades.deployProxy(pre, [
-      tokenName, 
+      tokenName,
       tokenSymbol,
       '0x4200000000000000000000000000000000000010', // Standard Bridge address on L2 minting source
       L1TokenAddress // presearch token address on L1
