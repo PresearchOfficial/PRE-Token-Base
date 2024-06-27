@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * Ported to 0.8.24 solidity by Vladimir Klimo, bitCore,s.r.o.
  * 20.03.2024 - https://www.bitcore.sk
  */
@@ -42,7 +42,7 @@ import { AccessControlEnumerableUpgradeable } from "@openzeppelin/contracts-upgr
  * @title Presearch Commom ERC20
  * @author Vladimir Klimo
  * @notice Direct port of PRE Token V3 contract from solidity 0.6.2 to 0.8.24 with customizations for EIP3009 (previously PRETransferAuthorizableERC20.sol)
- * 
+ *
  * @dev Implementation of EIP3009
  * Modification for DOMAIN_SEPARATOR library was handled by using internal generator for domain separator of EIP712Upgradeable
  * main EIP3009 contract is extended with AccessControl and allow only TRANSFER_AUTHORIZABLE_ROLE members (preferably contracts)
@@ -99,6 +99,7 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
     string internal constant _CALLER_MUST_BE_PAYEEE_ERROR = "EIP3009: caller must be the payee";
     string internal constant _AUTHORIZATION_NOT_YET_VALID_ERROR = "EIP3009: authorization is not yet valid";
     string internal constant _AUTHORIZATION_EXPIRED_ERROR = "EIP3009: authorization is expired";
+    string internal constant _AUTHORIZATION_FROM_ERROR = "EIP3009: from address is not authorized for transferWithAuthorization";
 
     /**
      * @dev Ported function to provide same interfaces as PRE Token V3 contract on L1 for signing
@@ -144,7 +145,9 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external virtual onlyRole(TRANSFER_AUTHORIZER_ROLE) {
+    ) external virtual {
+        require(hasRole(TRANSFER_AUTHORIZER_ROLE, from), _AUTHORIZATION_FROM_ERROR);
+
         _transferWithAuthorization(
             TRANSFER_WITH_AUTHORIZATION_TYPEHASH,
             from,
@@ -184,8 +187,9 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external virtual onlyRole(TRANSFER_AUTHORIZER_ROLE) {
+    ) external virtual {
         require(to == _msgSender(), _CALLER_MUST_BE_PAYEEE_ERROR);
+        require(hasRole(TRANSFER_AUTHORIZER_ROLE, from), _AUTHORIZATION_FROM_ERROR);
 
         _transferWithAuthorization(
             RECEIVE_WITH_AUTHORIZATION_TYPEHASH,
@@ -215,7 +219,7 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external virtual onlyRole(TRANSFER_AUTHORIZER_ROLE) {
+    ) external virtual {
         EIP3009Storage storage $ = _getEIP3009Storage();
         require(
             !$._authorizationStates[authorizer][nonce],

@@ -3,7 +3,7 @@
  * @title Presearch Commom ERC20
  * @author Vladimir Klimo
  * @notice Presearch ERC20 Token for Optimism/Base network
- * 
+ *
  */
 
 pragma solidity ^0.8.24;
@@ -23,7 +23,7 @@ import { EIP3009 } from "./EIP3009.sol";
  *
  * Supply capped at 1B tokens to match the maximum on Eth/PRETokenV3 contract
  * Only bridge could mint/burn the token on base/optimism L2 network
- * No minting is done during inicialization
+ * No minting is done during initialization
  */
 contract PRETokenBase is PresearchCommonERC20, ILegacyMintableERC20, IOptimismMintableERC20, ISemver {
 
@@ -46,17 +46,19 @@ contract PRETokenBase is PresearchCommonERC20, ILegacyMintableERC20, IOptimismMi
 
     function initialize(string memory name, string memory symbol, address _bridge, address _remoteToken) public initializer {
         __Context_init_unchained();
-        // token name and symbol inicialization
+        // token name and symbol initialization
         __ERC20_init_unchained(name, symbol);
-        // max supply inicialization 1 billion token 1000000000*10**18
+        // max supply initialization 1 billion token 1000000000*10**18
         __ERC20Capped_init_unchained(1e27);
         // implementation of pauseable token
         __Pausable_init_unchained();
-        // implementation of AccessControl        
+        // implementation of AccessControl
         __AccessControl_init_unchained();
         __AccessControlEnumerable_init_unchained();
+        // EIP712 domain initialization
+        //__EIP712_init_unchained(name, "1");
         // EIP9001 implementation of TransferAuthorizable
-        // adds access control of TOKEN_TRANSFER_AUTHORIZE to contract owner during inicialization
+        // adds access control of TOKEN_TRANSFER_AUTHORIZE to contract owner during initialization
         __EIP3009_init_unchained();
         // inicialize underlying contract
         __PresearchCommonERC20_init_unchained();

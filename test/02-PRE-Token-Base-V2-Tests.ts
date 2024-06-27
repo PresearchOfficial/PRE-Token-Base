@@ -4,32 +4,46 @@ import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { PRETokenBase } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import { randomBytes } from "ethers";
 
-describe("Presearch Token", function() {  
+describe("Presearch Token - version 02", function() {  
   let tokenAddress: string;
   let con: PRETokenBase;
   let owner: SignerWithAddress;
   let w1: SignerWithAddress;
   let w2: SignerWithAddress;
 
+  const tokenName = 'Presearch';
+
   before (async function () {
     const pre = await ethers.getContractFactory("PRETokenBase");
+    const preV2 = await ethers.getContractFactory("PRETokenBaseV2");
     //console.log("Deploying PRETokenBase...");
     const contract = await upgrades.deployProxy(pre, [
-        "Presearch Token", 
+        tokenName, 
         "PRE",
         '0x4200000000000000000000000000000000000010', // Standard Bridge address on L2 minting source
         '0xEC213F83defB583af3A000B1c0ada660b1902A0F' // presearch token address on L1
     ] );
     await contract.waitForDeployment();
+
     tokenAddress =  await contract.getAddress();
-    console.log("V1 Contract deployed to:", tokenAddress);
-    con = await ethers.getContractAt("PRETokenBase", tokenAddress);
+    // 
+    const upgraded = await upgrades.upgradeProxy(tokenAddress, preV2);
+
+    // for V2 of Base contract
+    console.log("Reinitializing...");
+    await upgraded.reinitialize('Presearch', '1');
+    console.log("Upgrade and reinitialization complete!");
+
+    console.log("V2 Contract deployed to:", tokenAddress);    
+    con = await ethers.getContractAt("PRETokenBaseV2", tokenAddress);
+
     [owner, w1, w2] = await ethers.getSigners();
   });
 
   it('Check token/contract assigned name', async () => {
-    expect((await con.name()).toString()).to.equal('Presearch Token');
+    expect((await con.name()).toString()).to.equal('Presearch');
   });
 
   it('Check symbol', async () => {
@@ -178,6 +192,83 @@ describe("Presearch Token", function() {
         await con.getRoleAdmin(role)
     ).be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
   });
+
+  it('Test the EIP712 Domain', async () => {
+    const domain = await con.eip712Domain();
+    const contractAddress = await con.getAddress()
+    await expect(
+      domain[1]
+    ).be.equal(tokenName);
+    await expect(
+      domain[2]
+    ).be.equal("1");
+    await expect(
+      domain[4]
+    ).be.equal(contractAddress);
+  });
   
+
+  it('Execute TransferWithAuthorization', async () => {
+
+    const amountBN = 100;
+    const validTill = BigInt(Math.floor(Date.now() / 1000) + 3600); // Valid for an hour
+    const nonce = ethers.randomBytes(32);
+    //console.log( ethers.hexlify(nonce));
+  
+    const domain = {
+      name: tokenName,
+      version: "1",
+      chainId: 31337,
+      verifyingContract: tokenAddress,
+    };
+    const types = {
+      TransferWithAuthorization: [
+        { name: "from", type: "address" },
+        { name: "to", type: "address" },
+        { name: "value", type: "uint256" },
+        { name: "validAfter", type: "uint256" },
+        { name: "validBefore", type: "uint256" },
+        { name: "nonce", type: "bytes32" },
+      ]
+    };
+    const message = {
+      from: owner.address,
+      to: w1.address,
+      value: BigInt(100),
+      validAfter: BigInt(0),
+      validBefore: validTill, // Valid for an hour
+      nonce: nonce,
+    }
+
+    const signature = await owner.signTypedData(
+      domain, types, message
+    );
+
+    const v = "0x" + signature.slice(130, 132);
+    const r = signature.slice(0, 66);
+    const s = "0x" + signature.slice(66, 130);
+
+    const b1 = await con.balanceOf(w1.address);
+    const callContract = await con.transferWithAuthorization(
+      owner.address,
+      w1.address,
+      BigInt(100),
+      BigInt(0),
+      validTill,
+      nonce,
+      v,
+      r,
+      s
+    );
+    const b2 = await con.balanceOf(w1.address);
+
+    console.log(b1)
+    console.log(b2)
+
+    await expect(
+      b2-b1
+    ).be.equal(100);
+
+  });
 
 });

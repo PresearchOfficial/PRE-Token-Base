@@ -9,16 +9,17 @@ async function main() {
 
   // decides where to deploy and which tokens to inicialize contract with
   switch (networkName) {
+    case 'localhost': { L1TokenAddress = '0x0765C04EF390A63E8b7Bb6A5FCA2F42169C7bB19'; break; }
     case 'base-sepolia': { L1TokenAddress = '0x0765C04EF390A63E8b7Bb6A5FCA2F42169C7bB19'; break; }
     case 'base-mainnet': { L1TokenAddress = '0xEC213F83defB583af3A000B1c0ada660b1902A0F'; break; }
     case 'optimism-mainnet': { L1TokenAddress = '0xEC213F83defB583af3A000B1c0ada660b1902A0F'; break; }
     default: { throw new TypeError('Unknown network for deployment'); break; }
   }
-  
+
   const pre = await ethers.getContractFactory("PRETokenBase");
   console.log("Deploying PRETokenBase...");
   const proxy = await upgrades.deployProxy(pre, [
-      tokenName, 
+      tokenName,
       tokenSymbol,
       '0x4200000000000000000000000000000000000010', // Standard Bridge address on L2 minting source
       L1TokenAddress // presearch token address on L1
