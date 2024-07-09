@@ -57,6 +57,8 @@ contract PRETokenBase is PresearchCommonERC20, ILegacyMintableERC20, IOptimismMi
         __AccessControlEnumerable_init_unchained();
         // EIP712 domain initialization
         //__EIP712_init_unchained(name, "1");
+        // ReentrancyGuard will be inicialized in V2
+        // __ReentrancyGuard_init_unchained();
         // EIP9001 implementation of TransferAuthorizable
         // adds access control of TOKEN_TRANSFER_AUTHORIZE to contract owner during initialization
         __EIP3009_init_unchained();

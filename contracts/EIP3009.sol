@@ -36,6 +36,7 @@ import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/Mes
 import { ERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import { EIP712Upgradeable } from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import { AccessControlEnumerableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
+import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 
 /**
@@ -48,7 +49,7 @@ import { AccessControlEnumerableUpgradeable } from "@openzeppelin/contracts-upgr
  * main EIP3009 contract is extended with AccessControl and allow only TRANSFER_AUTHORIZABLE_ROLE members (preferably contracts)
  * execute any authorized withdrawals/transfers
  */
-abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgradeable, AccessControlEnumerableUpgradeable {
+abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgradeable, AccessControlEnumerableUpgradeable, ReentrancyGuardUpgradeable {
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
 
@@ -59,6 +60,7 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
         __ERC20_init_unchained(name, symbol);
         __EIP712_init_unchained(name, "1" );
         __AccessControl_init_unchained();
+        __ReentrancyGuard_init_unchained();
     }
 
     function __EIP3009_init_unchained() internal onlyInitializing {
@@ -145,7 +147,7 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external virtual {
+    ) external virtual nonReentrant {
         require(hasRole(TRANSFER_AUTHORIZER_ROLE, from), _AUTHORIZATION_FROM_ERROR);
 
         _transferWithAuthorization(
@@ -187,7 +189,7 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external virtual {
+    ) external virtual nonReentrant {
         require(to == _msgSender(), _CALLER_MUST_BE_PAYEEE_ERROR);
         require(hasRole(TRANSFER_AUTHORIZER_ROLE, from), _AUTHORIZATION_FROM_ERROR);
 
@@ -219,7 +221,7 @@ abstract contract EIP3009 is ContextUpgradeable, EIP712Upgradeable, ERC20Upgrade
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external virtual {
+    ) external virtual nonReentrant {
         EIP3009Storage storage $ = _getEIP3009Storage();
         require(
             !$._authorizationStates[authorizer][nonce],

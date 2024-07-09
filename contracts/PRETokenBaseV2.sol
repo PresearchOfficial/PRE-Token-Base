@@ -33,8 +33,12 @@ import { PRETokenBase } from "./PRETokenBase.sol";
 
 contract PRETokenBaseV2 is PRETokenBase {
 
-    function reinitialize(string memory name, string memory version) public reinitializer(2) {
+    function reinitialize(string memory name, string memory version) public reinitializer(3) {
+        // correction of domain and version
         super.__EIP712_init(name, version);
+        // reentrancy guard init from audit recommmendation (low prio finding)
+        __ReentrancyGuard_init_unchained();         
     }
 
+    uint256[50] private __gap;
 }

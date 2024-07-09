@@ -15,7 +15,7 @@ async function main() {
   switch (networkName) {
     case 'base-mainnet': { PROXY_ADDRESS = '0x3816dD4bd44c8830c2FA020A5605bAC72FA3De7A'; break; }
     case 'base-sepolia': { PROXY_ADDRESS = '0xc0C034725e4eC6DDd23B8D4e6412094BcfB3F5D6'; break; }
-    case 'localhost': { PROXY_ADDRESS = '0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1'; break; }
+    case 'localhost': { PROXY_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'; break; }
     default: { throw new TypeError('Unknown network for deployment'); break; }
   }
 
