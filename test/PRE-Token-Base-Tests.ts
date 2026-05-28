@@ -3,6 +3,10 @@ import { ethers, upgrades } from "hardhat";
 import { PRETokenBase } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
+const BRIDGE_ADDRESS = "0x4200000000000000000000000000000000000010";
+const L1_TOKEN_ADDRESS = "0xEC213F83defB583af3A000B1c0ada660b1902A0F";
+const INITIAL_TEST_SUPPLY = ethers.parseUnits("500000000", 18);
+
 describe("Presearch Token", function() {
   let tokenAddress: string;
   let con: PRETokenBase;
@@ -16,14 +20,20 @@ describe("Presearch Token", function() {
     const contract = await upgrades.deployProxy(pre, [
         "Presearch Token",
         "PRE",
-        '0x4200000000000000000000000000000000000010', // Standard Bridge address on L2 minting source
-        '0xEC213F83defB583af3A000B1c0ada660b1902A0F' // presearch token address on L1
+        BRIDGE_ADDRESS, // Standard Bridge address on L2 minting source
+        L1_TOKEN_ADDRESS // presearch token address on L1
     ] );
     await contract.waitForDeployment();
     tokenAddress =  await contract.getAddress();
     console.log("V1 Contract deployed to:", tokenAddress);
     con = await ethers.getContractAt("PRETokenBase", tokenAddress);
     [owner, w1, w2] = await ethers.getSigners();
+
+    await ethers.provider.send("hardhat_setBalance", [BRIDGE_ADDRESS, "0xde0b6b3a7640000"]);
+    await ethers.provider.send("hardhat_impersonateAccount", [BRIDGE_ADDRESS]);
+    const bridge = await ethers.getSigner(BRIDGE_ADDRESS);
+    await con.connect(bridge).mint(owner.address, INITIAL_TEST_SUPPLY);
+    await ethers.provider.send("hardhat_stopImpersonatingAccount", [BRIDGE_ADDRESS]);
   });
 
   it('Check token/contract assigned name', async () => {
@@ -39,8 +49,7 @@ describe("Presearch Token", function() {
   });
 
   it('Check total supply', async () => {
-    const value =  await con.totalSupply() / BigInt(BigInt(10)**await con.decimals());
-    expect(value.toString()).to.equal('500000000');
+    expect(await con.totalSupply()).to.equal(INITIAL_TEST_SUPPLY);
   });
 
   it('Check total MAX supply', async () => {

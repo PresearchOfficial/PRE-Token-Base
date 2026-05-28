@@ -3,7 +3,7 @@
  * @title Presearch Commom ERC20
  * @author Vladimir Klimo
  * @notice Direct port of PRE Token V3 contract from solidity 0.6.2 to 0.8.24 with customizations for EIP3009 (previously PRETransferAuthorizableERC20.sol)
- * 
+ *
  */
 
 pragma solidity ^0.8.24;
@@ -18,7 +18,7 @@ import { EIP3009 } from "./EIP3009.sol";
  * @dev PresearchCommonERC20 is ported version of PRETokenV3 contract
  * MINTER_ROLE is not necessary as Base/Optimism L2 would utilize the native bridge to mint/burn token on L2
  * PAUSER_ROLE is implemented for security reason to stop/pause any transaction (red button case)
- * TRANSFER_AUTHORIZABLE_ROLE is set during EIP9001 initialization 
+ * TRANSFER_AUTHORIZABLE_ROLE is set during EIP9001 initialization
  */
 abstract contract PresearchCommonERC20 is Initializable, ERC20CappedUpgradeable, EIP3009, PausableUpgradeable {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
@@ -71,12 +71,12 @@ abstract contract PresearchCommonERC20 is Initializable, ERC20CappedUpgradeable,
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransferBatch() internal virtual whenNotPaused { }    
+    function _beforeTokenTransferBatch() internal virtual whenNotPaused { }
 
     /**
      * @dev Send multiple transfers as a batch within a single transaction
-     * This is much more efficient than sending independent transactions. 
-     * This method should between 28% of gas (2 transfers) 
+     * This is much more efficient than sending independent transactions.
+     * This method should between 28% of gas (2 transfers)
      * and 50%-60% of gas (10+ transfers)
      *
      * Calling conditions:
@@ -101,7 +101,7 @@ abstract contract PresearchCommonERC20 is Initializable, ERC20CappedUpgradeable,
             uint amount = amounts[i];
             address recipient = recipients[i];
 
-            if(sender != recipient){            
+            if(sender != recipient){
                 _transfer(sender, recipient, amount);
             }
         }
